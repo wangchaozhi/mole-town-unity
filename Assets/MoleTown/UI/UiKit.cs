@@ -11,9 +11,14 @@ namespace MoleTown
 
         public static Font LoadFont()
         {
-            // 系统字体自带中文；找不到时退回 Unity 内置字体
-            var font = Font.CreateDynamicFontFromOSFont(
-                new[] { "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Arial Unicode MS", "Arial" }, 32);
+            // 依次尝试 macOS / Windows / Linux 常见的中文系统字体；都找不到时退回 Unity 内置字体（不含中文）
+            var font = Font.CreateDynamicFontFromOSFont(new[]
+            {
+                "PingFang SC", "Hiragino Sans GB",
+                "Microsoft YaHei", "Microsoft YaHei UI", "SimHei",
+                "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei", "Droid Sans Fallback",
+                "Arial Unicode MS", "Arial",
+            }, 32);
             return font ? font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         }
 

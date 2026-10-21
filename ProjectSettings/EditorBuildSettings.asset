@@ -8,8 +8,5 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/MoleTown/Scenes/MoleTown.unity
     guid: 2f61314c2981349e8a2533acde04dfcf
-  - enabled: 1
-    path: Assets/Scenes/ToonDemo.unity
-    guid: 72ab6cc3751ad495b84bf26812e51366
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

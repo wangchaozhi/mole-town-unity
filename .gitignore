@@ -42,3 +42,7 @@ crashlytics-build.properties
 /MoleTown_*.png
 
 .DS_Store
+
+# 性能测试包打包时生成的临时文件
+/Assets/Resources/PerformanceTestRun*
+/Assets/Resources.meta

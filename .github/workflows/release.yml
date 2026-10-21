@@ -1,0 +1,146 @@
+# 推送 v* 标签时：跑测试 → 构建 Windows / macOS / Linux → 发布 GitHub Release
+# 需要仓库 Secrets：UNITY_LICENSE（Unity_lic.ulf 文件内容）、UNITY_EMAIL、UNITY_PASSWORD，见 README「发布新版本」
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:   # 手动运行只构建、不发布，用来试跑
+
+permissions:
+  contents: write   # 创建 Release
+  checks: write     # 测试结果写进检查项
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+  UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+jobs:
+  test:
+    name: 测试
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检查 Unity 授权
+        run: |
+          if [ -z "$UNITY_LICENSE" ] || [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
+            echo "::error::缺少 Secrets：UNITY_LICENSE / UNITY_EMAIL / UNITY_PASSWORD，配置方法见 README「发布新版本」"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-test-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: Library-test-
+
+      - name: EditMode + PlayMode 测试
+        uses: game-ci/unity-test-runner@v4
+        with:
+          testMode: all
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: 测试结果
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: artifacts
+          retention-days: 7
+
+  build:
+    name: 构建 ${{ matrix.name }}
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - targetPlatform: StandaloneWindows64
+            name: Windows
+          - targetPlatform: StandaloneOSX
+            name: macOS
+          - targetPlatform: StandaloneLinux64
+            name: Linux
+    steps:
+      # Unity 的 Docker 镜像很大，先腾出磁盘空间
+      - uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          large-packages: false
+
+      - uses: actions/checkout@v4
+
+      - name: 计算版本号
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="0.0.0-dev.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: Library-${{ matrix.targetPlatform }}-
+
+      - name: 构建
+        uses: game-ci/unity-builder@v4
+        with:
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: MoleTown
+          buildMethod: MoleTown.Editor.BuildScript.Build
+          versioning: Custom
+          version: ${{ steps.version.outputs.version }}
+
+      - name: 打包
+        id: package
+        run: |
+          # Docker 里产出的文件属于 root
+          sudo chown -R "$USER" build
+          archive="MoleTown-${{ steps.version.outputs.version }}-${{ matrix.name }}.zip"
+          (cd "build/${{ matrix.targetPlatform }}" && zip -r -y -q "$GITHUB_WORKSPACE/$archive" . -x "*_BurstDebugInformation_DoNotShip/*" "*_BackUpThisFolder_ButDontShipItWithYourGame/*")
+          ls -lh "$archive"
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MoleTown-${{ matrix.name }}
+          path: ${{ steps.package.outputs.archive }}
+          retention-days: 7
+
+  release:
+    name: 发布 Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: MoleTown-*
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: 鼹鼠小镇 ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          files: dist/*.zip
+          body: |
+            ## 下载
+
+            | 平台 | 文件 | 运行方式 |
+            | --- | --- | --- |
+            | Windows | `*-Windows.zip` | 解压后运行 `MoleTown.exe` |
+            | macOS | `*-macOS.zip` | 解压后右键 `MoleTown.app` → 打开（未签名，首次需要手动允许） |
+            | Linux | `*-Linux.zip` | 解压后运行 `./MoleTown`，需要系统装有中文字体（如 Noto Sans CJK） |

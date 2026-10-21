@@ -86,6 +86,37 @@ Unity -batchmode -projectPath . -runTests -testPlatform PlayMode -testResults re
 
 PlayMode 测试使用独立的存档 key，不会影响本地游戏进度。
 
+## 发布新版本
+
+推送以 `v` 开头的标签会触发 [Release 工作流](.github/workflows/release.yml)：先跑全部测试，再用 [GameCI](https://game.ci) 在 Linux 上构建 **Windows / macOS / Linux** 三个版本，最后打包上传到 GitHub Release。标签里带 `-`（如 `v0.2.0-beta.1`）会发布成预发布版。
+
+第一次使用前，需要把 Unity 授权配置到仓库的 Secrets：
+
+1. 在 Unity Hub 登录后，进入 Preferences → Licenses → Add → *Get a free personal license*。授权文件在 macOS 上位于 `/Library/Application Support/Unity/Unity_lic.ulf`，Windows 上位于 `C:\ProgramData\Unity\Unity_lic.ulf`。找不到这个文件时，参考 [GameCI 激活说明](https://game.ci/docs/github/activation)。
+2. 用 GitHub CLI 设置三个 Secrets（后两条会提示你输入 Unity 账号的邮箱和密码）：
+
+```bash
+gh secret set UNITY_LICENSE -R wangchaozhi/mole-town-unity < "/Library/Application Support/Unity/Unity_lic.ulf"
+```
+
+```bash
+gh secret set UNITY_EMAIL -R wangchaozhi/mole-town-unity
+```
+
+```bash
+gh secret set UNITY_PASSWORD -R wangchaozhi/mole-town-unity
+```
+
+3. 打标签发版：
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+也可以在 Actions 页面手动运行 Release 工作流试跑，只构建不发布。本地打包用菜单 **Tools → MoleTown → Build Player (当前平台)**，输出到 `Builds/`。
+
+macOS 版没有签名，首次打开需要右键 → 打开；Linux 版需要系统装有中文字体（如 Noto Sans CJK）。
+
 ## 说明
 
 游戏里的地名、角色名和货币（鼹鼠小镇、阿土、小棉、金豆等）都是原创，没有使用《摩尔庄园》的名称与美术。

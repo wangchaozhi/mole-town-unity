@@ -84,7 +84,8 @@ public static class MoleTownBuilder
 
         Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
         EditorSceneManager.SaveScene(scene, ScenePath);
-        var scenes = EditorBuildSettings.scenes.Where(s => s.path != ScenePath).ToList();
+        // 顺便清掉已删除场景的残留条目，否则打包会失败
+        var scenes = EditorBuildSettings.scenes.Where(s => s.path != ScenePath && File.Exists(s.path)).ToList();
         scenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
         EditorBuildSettings.scenes = scenes.ToArray();
         AssetDatabase.SaveAssets();
@@ -514,6 +515,7 @@ public static class MoleTownBuilder
         var agent = player.AddComponent<NavMeshAgent>();
         agent.radius = 0.45f;
         agent.height = 1.2f;
+        agent.enabled = false;   // 由 PlayerController.Start 启用，避免早于导航网格加载
         player.AddComponent<PlayerController>();
         player.AddComponent<PlayerAppearance>();
         return player;

@@ -32,6 +32,15 @@ namespace MoleTown
             marker.gameObject.SetActive(false);
         }
 
+        // NavMeshAgent 是引擎组件，场景加载时可能比 NavMeshSurface 先启用，那时还没有导航网格。
+        // 所以场景里的代理默认禁用，等 Start（所有组件都已启用）再打开，并把角色放到网格上。
+        void Start()
+        {
+            agent.enabled = true;
+            if (!agent.isOnNavMesh && NavMesh.SamplePosition(transform.position, out var hit, 5f, NavMesh.AllAreas))
+                agent.Warp(hit.position);
+        }
+
         void Update()
         {
             if (!cam) cam = Camera.main;
@@ -57,6 +66,7 @@ namespace MoleTown
         public void StopMoving()
         {
             pending = null;
+            if (!agent.enabled) return;
             if (agent.isOnNavMesh) agent.ResetPath();
         }
 
