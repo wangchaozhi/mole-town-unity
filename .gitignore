@@ -1,0 +1,44 @@
+# Unity 生成的目录
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# 资源存储空间索引，可重新生成
+/Assets/AssetStoreTools*
+
+# IDE / 工程文件
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+
+# 构建产物和日志
+*.apk
+*.aab
+*.app
+*.unitypackage
+*.log
+*.pdb
+*.mdb
+crashlytics-build.properties
+
+# 测试结果与截图输出（Docs/images 里的是文档用图，保留）
+/results-*.xml
+/test-results.xml
+/MoleTown_*.png
+
+.DS_Store

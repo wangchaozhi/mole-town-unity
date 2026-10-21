@@ -1,0 +1,17 @@
+{
+    "name": "MoleTown.Gameplay",
+    "rootNamespace": "MoleTown",
+    "references": [
+        "MoleTown.Core",
+        "MoleTown.Visuals"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,11 @@
+{
+  "name": "com.moletown.toonshader",
+  "displayName": "MoleTown Toon Shader",
+  "version": "1.0.0",
+  "unity": "6000.0",
+  "description": "URP 三渲二着色器：色阶光照、投影色阶化、硬边高光、屏幕空间深度边缘光、外扩描边（支持平滑法线），以及平滑法线烘焙工具。",
+  "keywords": ["toon", "cel shading", "anime", "outline", "urp"],
+  "dependencies": {
+    "com.unity.render-pipelines.universal": "17.0.0"
+  }
+}

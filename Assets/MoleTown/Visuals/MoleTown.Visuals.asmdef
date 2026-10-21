@@ -1,0 +1,17 @@
+{
+    "name": "MoleTown.Visuals",
+    "rootNamespace": "MoleTown",
+    "references": [
+        "MoleTown.Core",
+        "MoleTown.ToonShader"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
